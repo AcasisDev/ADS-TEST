@@ -8,7 +8,6 @@ interface Product {
   name: string;
   price: number;
   description: string;
-  image: string;
   category: string;
   requires_prescription: boolean;
   stock: number;
@@ -45,22 +44,13 @@ const Shop = () => {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching products...'); // Debug log
-
       const { data, error: fetchError } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, price, description, category, requires_prescription, stock')
         .order('name', { ascending: true });
 
       if (fetchError) {
-        console.error('Supabase error:', fetchError);
         throw new Error(fetchError.message);
-      }
-
-      console.log('Fetched products:', data); // Debug log
-      
-      if (!data || data.length === 0) {
-        console.log('No products found in database');
       }
 
       setProducts(data || []);
@@ -154,36 +144,29 @@ const Shop = () => {
   const GridView = () => (
     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {filteredProducts.map(product => (
-        <div key={product.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-full h-32 sm:h-40 object-cover"
-          />
-          <div className="p-4">
-            <div className="flex flex-col mb-2">
-              <h3 className="text-sm sm:text-base font-bold truncate">{product.name}</h3>
-              <span className="text-sm sm:text-base font-bold text-emerald-600">
-                {formatPrice(product.price)}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs">
-                {product.category}
-              </span>
-              <button
-                onClick={() => addToCart(product)}
-                disabled={product.stock === 0}
-                className={`w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                  product.stock === 0
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                }`}
-              >
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </button>
-            </div>
+        <div key={product.id} className="bg-white rounded-lg shadow-lg p-4">
+          <div className="mb-2">
+            <h3 className="text-sm sm:text-base font-bold truncate">{product.name}</h3>
+            <span className="text-sm sm:text-base font-bold text-emerald-600">
+              {formatPrice(product.price)}
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs">
+              {product.category}
+            </span>
+            <button
+              onClick={() => addToCart(product)}
+              disabled={product.stock === 0}
+              className={`w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                product.stock === 0
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              }`}
+            >
+              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
           </div>
         </div>
       ))}
@@ -193,39 +176,32 @@ const Shop = () => {
   const ListView = () => (
     <div className="space-y-4">
       {filteredProducts.map(product => (
-        <div key={product.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex">
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-24 sm:w-48 h-24 sm:h-48 object-cover"
-          />
-          <div className="flex-1 p-4">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h3 className="text-lg font-bold">{product.name}</h3>
-                <span className="text-sm text-gray-600">{product.category}</span>
-              </div>
-              <span className="text-lg font-bold text-emerald-600">
-                {formatPrice(product.price)}
-              </span>
+        <div key={product.id} className="bg-white rounded-lg shadow-lg p-4">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h3 className="text-lg font-bold">{product.name}</h3>
+              <span className="text-sm text-gray-600">{product.category}</span>
             </div>
-            <p className="text-sm text-gray-600 mb-4">{product.description}</p>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                Stock: {product.stock}
-              </span>
-              <button
-                onClick={() => addToCart(product)}
-                disabled={product.stock === 0}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  product.stock === 0
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                }`}
-              >
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </button>
-            </div>
+            <span className="text-lg font-bold text-emerald-600">
+              {formatPrice(product.price)}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">{product.description}</p>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">
+              Stock: {product.stock}
+            </span>
+            <button
+              onClick={() => addToCart(product)}
+              disabled={product.stock === 0}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                product.stock === 0
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              }`}
+            >
+              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
           </div>
         </div>
       ))}
@@ -323,16 +299,9 @@ const Shop = () => {
             <div className="space-y-4">
               {cart.map(item => (
                 <div key={item.id} className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center">
-                    <img 
-                      src={item.image} 
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded-lg mr-4"
-                    />
-                    <div>
-                      <h4 className="font-semibold">{item.name}</h4>
-                      <p className="text-gray-600">{formatPrice(item.price)}</p>
-                    </div>
+                  <div>
+                    <h4 className="font-semibold">{item.name}</h4>
+                    <p className="text-gray-600">{formatPrice(item.price)}</p>
                   </div>
                   
                   <div className="flex items-center">
